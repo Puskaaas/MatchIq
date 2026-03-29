@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#00d4aa" />
+  <meta name="description" content="Football analytics and betting insights" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MatchIQ" />
+
+  <title>MatchIQ</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">M</span>
+        <span class="logo-text">Match<span class="accent">IQ</span></span>
+      </div>
+      <div class="header-actions">
+        <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+          <span class="lang-flag">🇮🇹</span>
+          <span class="lang-label" id="langLabel">IT</span>
+        </button>
+        <div class="connection-dot" id="connectionDot" title="API Status"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOP NAV -->
+  <nav class="top-nav" id="topNav">
+    <button class="nav-tab active" data-view="matches" data-it="Partite" data-en="Matches">Partite</button>
+    <button class="nav-tab" data-view="stats" data-it="Statistiche" data-en="Statistics">Statistiche</button>
+    <button class="nav-tab pro-tab" data-view="pro" data-it="Pro" data-en="Pro">
+      Pro <span class="pro-badge">PRO</span>
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- VIEW: MATCHES -->
+    <section class="view active" id="view-matches">
+      <div class="giornata-bar">
+        <button class="giornata-arrow" id="giornataBack" aria-label="Previous">&#8592;</button>
+        <div class="giornata-selector-wrap">
+          <select class="giornata-select" id="giornataSelect"></select>
+        </div>
+        <button class="giornata-arrow" id="giornataNext" aria-label="Next">&#8594;</button>
+      </div>
+      <div class="matches-grid" id="matchesGrid">
+        <div class="loading-state" id="matchesLoading">
+          <div class="spinner"></div>
+          <p data-it="Caricamento partite..." data-en="Loading matches...">Caricamento partite...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: STATS -->
+    <section class="view" id="view-stats">
+      <div class="stats-header">
+        <h2 class="section-title" data-it="Statistiche Serie A" data-en="Serie A Statistics">Statistiche Serie A</h2>
+        <select class="season-select" id="seasonSelect">
+          <option value="2024">2024/25</option>
+          <option value="2023">2023/24</option>
+          <option value="2022">2022/23</option>
+        </select>
+      </div>
+      <div class="stats-tabs">
+        <button class="stats-tab active" data-tab="teams" data-it="Squadre" data-en="Teams">Squadre</button>
+        <button class="stats-tab" data-tab="players" data-it="Giocatori" data-en="Players">Giocatori</button>
+      </div>
+      <div id="statsContent">
+        <div class="loading-state" id="statsLoading">
+          <div class="spinner"></div>
+          <p data-it="Caricamento statistiche..." data-en="Loading statistics...">Caricamento statistiche...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: PRO -->
+    <section class="view" id="view-pro">
+      <div class="pro-hero">
+        <div class="pro-icon">&#9651;</div>
+        <h2 data-it="MatchIQ Pro" data-en="MatchIQ Pro">MatchIQ Pro</h2>
+        <p data-it="Accedi ad analisi avanzate, predizioni AI e segnali di value betting." data-en="Access advanced analytics, AI predictions and value betting signals.">
+          Accedi ad analisi avanzate, predizioni AI e segnali di value betting.
+        </p>
+        <ul class="pro-features">
+          <li><span class="check">&#10003;</span> <span data-it="Predizioni AI illimitate" data-en="Unlimited AI predictions">Predizioni AI illimitate</span></li>
+          <li><span class="check">&#10003;</span> <span data-it="Value bet alerts" data-en="Value bet alerts">Value bet alerts</span></li>
+          <li><span class="check">&#10003;</span> <span data-it="Analisi xG avanzata" data-en="Advanced xG analysis">Analisi xG avanzata</span></li>
+          <li><span class="check">&#10003;</span> <span data-it="Storico 5 stagioni" data-en="5 season history">Storico 5 stagioni</span></li>
+          <li><span class="check">&#10003;</span> <span data-it="Export dati CSV" data-en="CSV data export">Export dati CSV</span></li>
+        </ul>
+        <button class="btn-pro" data-it="Inizia Gratis — 7 giorni" data-en="Start Free — 7 days">Inizia Gratis — 7 giorni</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MATCH ANALYSIS OVERLAY -->
+  <div class="overlay" id="overlay" aria-modal="true" role="dialog" aria-hidden="true">
+    <div class="overlay-panel">
+      <div class="overlay-header">
+        <button class="back-btn" id="overlayBack" aria-label="Back">
+          <span>&#8592;</span> <span data-it="Indietro" data-en="Back">Indietro</span>
+        </button>
+        <span class="overlay-round" id="overlayRound"></span>
+      </div>
+
+      <div class="match-hero" id="matchHero">
+        <div class="team-col">
+          <div class="team-logo-lg" id="heroHomeLogo"></div>
+          <div class="team-name-lg" id="heroHomeName"></div>
+          <div class="team-form" id="heroHomeForm"></div>
+        </div>
+        <div class="vs-col">
+          <div class="match-time-lg" id="heroTime"></div>
+          <div class="vs-badge">VS</div>
+          <div class="match-date-lg" id="heroDate"></div>
+        </div>
+        <div class="team-col">
+          <div class="team-logo-lg" id="heroAwayLogo"></div>
+          <div class="team-name-lg" id="heroAwayName"></div>
+          <div class="team-form" id="heroAwayForm"></div>
+        </div>
+      </div>
+
+      <div class="analysis-tabs" id="analysisTabs">
+        <button class="analysis-tab active" data-tab="analisi" data-it="Analisi" data-en="Analysis">Analisi</button>
+        <button class="analysis-tab" data-tab="h2h" data-it="H2H" data-en="H2H">H2H</button>
+        <button class="analysis-tab" data-tab="statistiche" data-it="Statistiche" data-en="Statistics">Statistiche</button>
+        <button class="analysis-tab" data-tab="quote" data-it="Quote" data-en="Odds">Quote</button>
+      </div>
+
+      <div class="analysis-content" id="analysisContent"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bottom-tab active" data-view="matches">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      <span data-it="Partite" data-en="Matches">Partite</span>
+    </button>
+    <button class="bottom-tab" data-view="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-it="Statistiche" data-en="Stats">Statistiche</span>
+    </button>
+    <button class="bottom-tab" data-view="pro">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Pro</span>
+    </button>
+  </nav>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
