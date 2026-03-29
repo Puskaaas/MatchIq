@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from services.flashscore import get_serie_a_fixtures, get_match_details, get_live_matches
-from models.schemas import Match
+from services.flashscore import get_serie_a_fixtures, get_match_details, get_live_matches, get_match_h2h
+from models.schemas import Match, H2HMatch, H2HSummary
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -21,6 +21,16 @@ async def list_live():
         return await get_live_matches()
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch live matches: {e}")
+
+
+@router.get("/{match_id}/h2h")
+async def match_h2h(match_id: str):
+    """Return H2H history and summary for a match."""
+    try:
+        meetings, summary = await get_match_h2h(match_id)
+        return {"meetings": meetings, "summary": summary}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch H2H for {match_id}: {e}")
 
 
 @router.get("/{match_id}", response_model=Match)

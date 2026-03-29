@@ -68,3 +68,55 @@ class MatchStats(BaseModel):
     away_shots_on_target: Optional[int] = None
     home_possession: Optional[float] = None
     away_possession: Optional[float] = None
+
+
+class H2HMatch(BaseModel):
+    match_id: str
+    date: str
+    home_team: str
+    home_logo: Optional[str] = None
+    away_team: str
+    away_logo: Optional[str] = None
+    home_score: int
+    away_score: int
+    result: str        # "H" home win, "D" draw, "A" away win
+    tournament: str
+
+
+class H2HSummary(BaseModel):
+    home_wins: int
+    draws: int
+    away_wins: int
+    home_goals_avg: float
+    away_goals_avg: float
+
+
+class Recommendation(BaseModel):
+    type: str          # "safe" | "medium" | "risky"
+    label: str         # "SICURA" | "MEDIA" | "RISCHIOSA"
+    text: str
+    odds_value: Optional[float] = None
+    confidence: int    # 0-100
+
+
+class ProbableResult(BaseModel):
+    home_goals: int
+    away_goals: int
+    prob_home: int
+    prob_draw: int
+    prob_away: int
+
+
+class AnalysisResult(BaseModel):
+    match_id: str
+    home_form: list[str]
+    away_form: list[str]
+    h2h: list[H2HMatch]
+    h2h_summary: H2HSummary
+    recommendations: list[Recommendation]
+    probable_result: ProbableResult
+    odds: MatchOdds
+    home_xg: Optional[float] = None
+    away_xg: Optional[float] = None
+    home_xga: Optional[float] = None
+    away_xga: Optional[float] = None
