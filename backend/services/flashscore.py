@@ -15,6 +15,7 @@ BASE_URL = f"https://{FLASHSCORE_HOST}"
 HEADERS = {
     "x-rapidapi-key": FLASHSCORE_API_KEY,
     "x-rapidapi-host": FLASHSCORE_HOST,
+    "Content-Type": "application/json",
 }
 
 _fixtures_cache: TTLCache = TTLCache(maxsize=1, ttl=CACHE_TTL_FIXTURES)
@@ -22,27 +23,33 @@ _odds_cache: TTLCache = TTLCache(maxsize=128, ttl=CACHE_TTL_ODDS)
 
 
 def _parse_match(raw: dict) -> Match:
-    home = raw.get("homeTeam", {})
-    away = raw.get("awayTeam", {})
+    # Support both v2 field names and legacy field names
+    home = raw.get("home_team") or raw.get("homeTeam") or {}
+    away = raw.get("away_team") or raw.get("awayTeam") or {}
     score = raw.get("homeScore", {})
     return Match(
-        id=str(raw.get("id", "")),
+        id=str(raw.get("match_id") or raw.get("id", "")),
         home_team=Team(
-            id=str(home.get("id", "")),
+            id=str(home.get("team_id") or home.get("id", "")),
             name=home.get("name", ""),
-            short_name=home.get("shortName"),
+            short_name=home.get("short_name") or home.get("shortName"),
+            logo_url=home.get("small_image_path"),
         ),
         away_team=Team(
-            id=str(away.get("id", "")),
+            id=str(away.get("team_id") or away.get("id", "")),
             name=away.get("name", ""),
-            short_name=away.get("shortName"),
+            short_name=away.get("short_name") or away.get("shortName"),
+            logo_url=away.get("small_image_path"),
         ),
-        start_timestamp=raw.get("startTimestamp", 0),
-        status=raw.get("status", {}).get("description", "unknown"),
-        home_score=score.get("current") if score else None,
-        away_score=raw.get("awayScore", {}).get("current") if raw.get("awayScore") else None,
-        round=raw.get("roundInfo", {}).get("round"),
-        venue=raw.get("venue", {}).get("name") if raw.get("venue") else None,
+        start_timestamp=raw.get("timestamp") or raw.get("startTimestamp", 0),
+        status=raw.get("status") if isinstance(raw.get("status"), str)
+               else raw.get("status", {}).get("description", "Not started"),
+        home_score=raw.get("home_score") if raw.get("home_score") is not None
+                   else (score.get("current") if score else None),
+        away_score=raw.get("away_score") if raw.get("away_score") is not None
+                   else (raw.get("awayScore", {}).get("current") if raw.get("awayScore") else None),
+        round=raw.get("round") or (raw.get("roundInfo", {}) or {}).get("round"),
+        venue=raw.get("venue", {}).get("name") if isinstance(raw.get("venue"), dict) else None,
     )
 
 
@@ -53,18 +60,19 @@ async def get_serie_a_fixtures() -> list[Match]:
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{BASE_URL}/v1/events/schedule/league",
+            f"{BASE_URL}/api/flashscore/v2/tournaments/fixtures",
             headers=HEADERS,
             params={
-                "tournamentId": SERIE_A_TOURNAMENT_ID,
-                "seasonId": SERIE_A_SEASON_ID,
+                "tournament_template_id": SERIE_A_TOURNAMENT_ID,
+                "season_id": SERIE_A_SEASON_ID,
             },
             timeout=15.0,
         )
         response.raise_for_status()
         data = response.json()
 
-    events = data.get("events", [])
+    # v2 endpoint returns a flat list of fixtures
+    events = data if isinstance(data, list) else data.get("data", data).get("events", [])
     matches = [_parse_match(e) for e in events]
     _fixtures_cache[cache_key] = matches
     return matches
